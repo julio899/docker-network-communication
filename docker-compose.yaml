@@ -1,0 +1,35 @@
+# version: '3.8'
+services:
+  rabbitmq:
+    container_name: rabbitmq_container
+    image: rabbitmq:3-management
+    networks:
+      - my_network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  express:
+    container_name: express_container
+    depends_on:
+      - rabbitmq
+    image: mockexpress:latest
+    ports:
+      - "3000:3020"
+    environment:
+      - SERVER_RABBITMQ='amqp://rabbitmq_container'
+      - RABBITQM_HOST=rabbitmq_container
+    networks:
+      - my_network
+    links:
+      - rabbitmq
+#    build: .
+
+networks:
+  my_network:
+    driver: bridge
+    external: true
+# docker-compose up -d
+# docker run -d --name rabbitmq_container --network my_network rabbitmq:3-management
+# docker run -d --name express_container --network my_network -e RABBITMQ_HOST=rabbitmq_container -p 3000:3000 my-express-app
+# docker run -d --rm -p 3000:3020 --name express_container --network my_network -e RABBITMQ_HOST=rabbitmq_container mockexpress:latest
